@@ -1,0 +1,45 @@
+{
+  "version": 1,
+  "seasons": [
+    {
+      "id": "spring",
+      "label": "春",
+      "sky": "#b9ced0",
+      "fog": "#cad8d2",
+      "foliage": "#78966b",
+      "water": "#769da0",
+      "particles": "rain",
+      "ambience": "spring_rain"
+    },
+    {
+      "id": "summer",
+      "label": "夏",
+      "sky": "#8fb8c3",
+      "fog": "#abc2ba",
+      "foliage": "#416f4d",
+      "water": "#4f8f94",
+      "particles": "mist",
+      "ambience": "summer_water"
+    },
+    {
+      "id": "autumn",
+      "label": "秋",
+      "sky": "#b6aa91",
+      "fog": "#c8baa0",
+      "foliage": "#9a7046",
+      "water": "#70878a",
+      "particles": "leaves",
+      "ambience": "autumn_wind"
+    },
+    {
+      "id": "winter",
+      "label": "冬",
+      "sky": "#929faa",
+      "fog": "#b4bec3",
+      "foliage": "#68716b",
+      "water": "#667d88",
+      "particles": "snow",
+      "ambience": "winter_stillness"
+    }
+  ]
+}

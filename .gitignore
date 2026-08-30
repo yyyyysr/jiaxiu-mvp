@@ -1,0 +1,43 @@
+# 密钥与本地环境（务必保留：.env 内含模型 API Key 与初始账号密码）
+.env
+.env.*
+!.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+*.egg-info/
+apps/api/.venv/
+
+# Node
+node_modules
+apps/web/dist
+dist/
+.vite/
+*.tsbuildinfo
+
+# 运行时状态（由应用自动重建，含账号与会话数据）
+data/jiaxiu_app.sqlite
+data/jiaxiu_app.sqlite-journal
+data/jiaxiu_app.sqlite-wal
+data/jiaxiu_app.sqlite-shm
+
+# 投稿者上传的私有文件
+data/submissions/
+!data/submissions/.gitkeep
+
+# 本地运行日志
+*.log
+logs/
+
+# 编辑器与系统
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp

@@ -1,0 +1,17 @@
+{
+  "private": true,
+  "packageManager": "pnpm@11.16.0",
+  "engines": {
+    "node": ">=22.13"
+  },
+  "scripts": {
+    "dev": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/run-local.ps1",
+    "dev:web": "pnpm --dir apps/web dev",
+    "build": "pnpm --dir apps/web build",
+    "release": ".venv\\Scripts\\python.exe scripts/build_release.py",
+    "test": "pnpm run test:web",
+    "test:e2e": "pnpm --dir apps/web test:e2e",
+    "test:web": "pnpm --dir apps/web test --run",
+    "lint:web": "pnpm --dir apps/web lint"
+  }
+}

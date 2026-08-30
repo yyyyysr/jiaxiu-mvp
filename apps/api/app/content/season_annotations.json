@@ -1,0 +1,69 @@
+{
+  "version": 1,
+  "annotations": [
+    {
+      "work_id": "work-jiaxiu-inscription-03-wu-dashan",
+      "season": "spring",
+      "is_primary": true,
+      "evidence_type": "explicit_title",
+      "evidence_quote": "壬午仲春登甲秀楼",
+      "review_status": "reviewed"
+    },
+    {
+      "work_id": "work-fuqing-yichou-xinchun-jiaxiu",
+      "season": "spring",
+      "is_primary": true,
+      "evidence_type": "explicit_title",
+      "evidence_quote": "乙丑新春试笔咏甲秀楼",
+      "review_status": "reviewed"
+    },
+    {
+      "work_id": "work-jiaxiu-inscription-02-zou-yigui",
+      "season": "spring",
+      "is_primary": false,
+      "evidence_type": "explicit_text",
+      "evidence_quote": "遥约梅花绽早春",
+      "review_status": "reviewed"
+    },
+    {
+      "work_id": "work-jiaxiu-inscription-09-ai-mao",
+      "season": "summer",
+      "is_primary": false,
+      "evidence_type": "explicit_date",
+      "evidence_quote": "乾隆己酉中夏",
+      "review_status": "candidate"
+    },
+    {
+      "work_id": "work-jiaxiu-inscription-11b-chen-huai",
+      "season": "summer",
+      "is_primary": false,
+      "evidence_type": "explicit_date",
+      "evidence_quote": "乾隆五十七年岁次壬子夏五月朔日",
+      "review_status": "candidate"
+    },
+    {
+      "work_id": "work-jiaxiu-inscription-04-liu-zao",
+      "season": "autumn",
+      "is_primary": true,
+      "evidence_type": "explicit_text",
+      "evidence_quote": "霜花寥落不禁秋，雨后亭台事事幽。何日登楼穷远目，满城秋色已全收。",
+      "review_status": "reviewed"
+    },
+    {
+      "work_id": "work-shu-wei-deng-jiaxiu-wen-luoye",
+      "season": "autumn",
+      "is_primary": true,
+      "evidence_type": "explicit_title",
+      "evidence_quote": "登甲秀楼闻落叶",
+      "review_status": "reviewed"
+    },
+    {
+      "work_id": "work-jiaxiu-inscription-02-zou-yigui",
+      "season": "autumn",
+      "is_primary": true,
+      "evidence_type": "explicit_text",
+      "evidence_quote": "卷帘花色三秋候，凭槛霞光万岭中。",
+      "review_status": "reviewed"
+    }
+  ]
+}

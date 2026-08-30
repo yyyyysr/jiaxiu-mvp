@@ -1,0 +1,67 @@
+{
+  "assetRights": {
+    "licenseStatus": "not_documented",
+    "permission": "provided_by_user_for_project_use",
+    "usageScope": "research_mvp_and_local_demonstration_only"
+  },
+  "assetTransform": {
+    "sourceFrontAxis": "+z",
+    "sourceToSceneQuaternion": [
+      1.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "sourceUpAxis": "-y"
+  },
+  "format": "binary_little_endian_ply",
+  "nonfiniteOpacity": {
+    "negativeInfinity": 160,
+    "positiveInfinity": 27591
+  },
+  "opacityClamp": {
+    "negative": -16.0,
+    "positive": 16.0
+  },
+  "properties": [
+    "x",
+    "y",
+    "z",
+    "nx",
+    "ny",
+    "nz",
+    "f_dc_0",
+    "f_dc_1",
+    "f_dc_2",
+    "opacity",
+    "scale_0",
+    "scale_1",
+    "scale_2",
+    "rot_0",
+    "rot_1",
+    "rot_2",
+    "rot_3"
+  ],
+  "recordBytes": 68,
+  "referenceImage": {
+    "height": 1621,
+    "path": "assets/splats/reference/original_pic.jpg",
+    "sha256": "601F19F3092BD967B6A3D2CDC71219AB50941985B9CB55158EE1557B5A96495C",
+    "width": 1080
+  },
+  "sourceBounds": {
+    "max": [
+      0.4486659765,
+      0.5052185059,
+      0.360003233
+    ],
+    "min": [
+      -0.4138890505,
+      -0.49820894,
+      -0.3628318906
+    ]
+  },
+  "sourceSha256": "3F3EAC93EFCE9E2F62958096E337B28E9D99A9276319B16AC07CF77D47689E84",
+  "vertexCount": 262144,
+  "webSha256": "8D80419F17E04AC4C997F6F350B15B02C03617262328EFC3B25F9D631AF6892A"
+}

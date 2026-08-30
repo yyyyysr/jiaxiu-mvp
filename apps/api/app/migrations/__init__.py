@@ -1,0 +1,1 @@
+"""Application-database migration definitions."""

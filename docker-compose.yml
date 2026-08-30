@@ -1,0 +1,59 @@
+name: jiaxiu-mvp
+
+services:
+  api:
+    build:
+      context: .
+      dockerfile: deploy/api.Dockerfile
+    restart: unless-stopped
+    environment:
+      JIAXIU_DATABASE_PATH: /workspace/data/jiaxiu_tiyong.sqlite
+      JIAXIU_FACSIMILE_ROOT: /var/lib/jiaxiu/facsimiles
+      JIAXIU_APP_DATABASE_PATH: /var/lib/jiaxiu/app/jiaxiu_app.sqlite
+      JIAXIU_SUBMISSION_ROOT: /var/lib/jiaxiu/submissions
+      JIAXIU_SESSION_COOKIE_SECURE: ${JIAXIU_SESSION_COOKIE_SECURE:-true}
+      JIAXIU_CORS_ALLOWED_ORIGINS: ${JIAXIU_CORS_ALLOWED_ORIGINS:-[]}
+      JIAXIU_MODEL_BASE_URL: ${JIAXIU_MODEL_BASE_URL:-}
+      JIAXIU_MODEL_API_KEY: ${JIAXIU_MODEL_API_KEY:-}
+      JIAXIU_MODEL_NAME: ${JIAXIU_MODEL_NAME:-gpt-4.1-mini}
+      JIAXIU_ADMIN_USERNAME: ${JIAXIU_ADMIN_USERNAME:-admin}
+      JIAXIU_ADMIN_INITIAL_PASSWORD: ${JIAXIU_ADMIN_INITIAL_PASSWORD:?请在 .env 中设置管理员初始密码}
+      JIAXIU_CONTRIBUTOR_USERNAME: ${JIAXIU_CONTRIBUTOR_USERNAME:-contributor}
+      JIAXIU_CONTRIBUTOR_INITIAL_PASSWORD: ${JIAXIU_CONTRIBUTOR_INITIAL_PASSWORD:?请在 .env 中设置投稿者初始密码}
+    volumes:
+      - jiaxiu-app-data:/var/lib/jiaxiu/app
+      - jiaxiu-submissions:/var/lib/jiaxiu/submissions
+      - ./data/facsimiles:/var/lib/jiaxiu/facsimiles:ro
+    healthcheck:
+      test:
+        - CMD
+        - /opt/jiaxiu-venv/bin/python
+        - -c
+        - import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/api/v1/health', timeout=2).read()
+      interval: 15s
+      timeout: 3s
+      retries: 5
+      start_period: 20s
+
+  web:
+    build:
+      context: .
+      dockerfile: deploy/web.Dockerfile
+      args:
+        VITE_API_BASE_URL: /api/v1
+    restart: unless-stopped
+    ports:
+      - "${JIAXIU_WEB_PORT:-8080}:80"
+    depends_on:
+      api:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1/healthz"]
+      interval: 15s
+      timeout: 3s
+      retries: 5
+      start_period: 10s
+
+volumes:
+  jiaxiu-app-data:
+  jiaxiu-submissions:

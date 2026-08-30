@@ -1,0 +1,11 @@
+import { useQuery } from "@tanstack/react-query"
+import { useState } from "react"
+import { api } from "../lib/api"
+import type { AuditEvent } from "../lib/types"
+
+const fieldNames: Record<string, string> = { title: "题名", authors: "作者", poem_text: "诗词正文", genre: "文体", historical_period: "时代", notes: "来源说明" }
+function safeDetail(event: AuditEvent) { const changed = event.detail.changed_fields; return Array.isArray(changed) && changed.every((x) => typeof x === "string") ? changed.map((key) => fieldNames[key]).filter(Boolean).join("、") || "已更新著录" : "已记录此操作" }
+export function AdminAuditPage() { const [page, setPage] = useState(1), [action, setAction] = useState(""), query = useQuery({ queryKey: ["admin", "audit", page], queryFn: () => api.listAuditEvents({ page, page_size: 20 }) }); const events = query.data?.events.filter((event) => !action || event.action === action) ?? []
+  return <main id="main-content" tabIndex={-1} className="admin-page"><p className="kicker">ADMINISTRATION · AUDIT LOG</p><h1>审计</h1><nav className="admin-local-nav"><a href="/admin/reviews">审核卷宗</a><a href="/admin/users">用户</a><a href="/admin/audit">审计</a></nav><label className="admin-filter">操作筛选（仅当前页）<select value={action} onChange={(e) => setAction(e.target.value)}><option value="">全部操作</option>{[...new Set(query.data?.events.map((event) => event.action) ?? [])].map((value) => <option key={value} value={value}>{value}</option>)}</select></label>
+    {query.isPending ? <p role="status">正在调阅审计记录…</p> : query.isError ? <p role="alert">审计记录暂时无法读取，请稍后重试。</p> : <><ol className="audit-list">{events.map((event) => <li key={event.event_id}><time>{new Date(event.created_at).toLocaleString("zh-CN")}</time><b>{event.actor_username ?? "系统"}</b><span>{event.action}</span><span>{event.target_type} · {event.target_id}</span><p>{safeDetail(event)}</p><code>{event.request_id}</code></li>)}</ol>{!events.length && <p className="review-empty">当前页没有匹配的审计记录。</p>}<div className="archive-pagination"><button disabled={page <= 1} onClick={() => setPage((n) => n - 1)}>上一页</button><span>第 {page} 页</span><button disabled={page * (query.data?.page_size ?? 20) >= (query.data?.total ?? 0)} onClick={() => setPage((n) => n + 1)}>下一页</button></div></>}
+  </main> }

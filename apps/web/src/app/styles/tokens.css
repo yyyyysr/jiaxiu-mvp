@@ -1,0 +1,18 @@
+:root {
+  --ink: #172923;
+  --paper: #f2eee4;
+  --vermilion: #a5473d;
+  --water: #487985;
+  --bronze: #b58f54;
+  --ink-soft: #45564f;
+  --paper-light: #faf7ef;
+  --rule: color-mix(in srgb, var(--ink) 24%, transparent);
+  --serif: "Songti SC", "STSong", "SimSun", "Noto Serif CJK SC", serif;
+  --sans: "FangSong", "STFangsong", "KaiTi", "Kaiti SC", sans-serif;
+  --space-page: clamp(1.25rem, 4vw, 4.5rem);
+  color: var(--ink);
+  background: var(--paper);
+  font-family: var(--serif);
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+}
