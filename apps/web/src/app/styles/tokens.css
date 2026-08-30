@@ -9,18 +9,21 @@
   --rule: color-mix(in srgb, var(--ink) 24%, transparent);
   --serif: "Songti SC", "STSong", "SimSun", "Noto Serif CJK SC", serif;
   --sans: "FangSong", "STFangsong", "KaiTi", "Kaiti SC", sans-serif;
-  --space-page: clamp(1.25rem, 4vw, 4.5rem);
+  --space-page: clamp(1.25rem, 3.2vw, 3.4rem);
 
-  /* One typographic scale for every page: headings stay close to body copy so research prose reads evenly. */
+  /* One typographic scale for every page: headings stay close to body copy so research prose reads evenly.
+     Body sizes carry the reading, so they sit a step higher and the leading a step tighter to keep
+     long passages from drifting apart. */
   --fs-display: clamp(2.05rem, 4.2vw, 2.95rem);
   --fs-page-title: clamp(1.9rem, 3.4vw, 2.5rem);
-  --fs-section: clamp(1.26rem, 2vw, 1.58rem);
-  --fs-subsection: 1.12rem;
-  --fs-lede: 1rem;
-  --fs-body: .94rem;
-  --fs-meta: .84rem;
-  --fs-micro: .74rem;
-  --lh-body: 1.92;
+  --fs-section: clamp(1.28rem, 2vw, 1.6rem);
+  --fs-subsection: 1.16rem;
+  --fs-lede: 1.06rem;
+  --fs-body: 1rem;
+  --fs-meta: .9rem;
+  --fs-micro: .8rem;
+  --lh-body: 1.78;
+  --lh-tight: 1.7;
 
   /* Catalogue field labels share one fill so 研究状态 / 作者身份 / 影像记录 / 著录信息 read as records. */
   --field-fill: linear-gradient(100deg, color-mix(in srgb, var(--bronze) 32%, transparent) 0%, color-mix(in srgb, var(--bronze) 10%, transparent) 74%, transparent 100%);
