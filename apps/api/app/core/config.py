@@ -11,7 +11,6 @@ from pydantic import (
 )
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-
 REPOSITORY_ROOT = Path(__file__).resolve().parents[4]
 
 

@@ -1,0 +1,94 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+# 同一分支上的新推送会取消旧的进行中任务，节省配额。
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  PYTHON_VERSION: "3.12"
+  NODE_VERSION: "22"
+
+jobs:
+  backend:
+    name: 后端测试与 Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 安装 uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+          cache-dependency-glob: apps/api/uv.lock
+
+      - name: 设置 Python ${{ env.PYTHON_VERSION }}
+        run: uv python install ${{ env.PYTHON_VERSION }}
+
+      - name: 安装依赖
+        run: uv sync --project apps/api --frozen --extra dev
+
+      - name: Ruff 检查
+        run: uv run --project apps/api --extra dev -- ruff check apps/api
+
+      - name: 单元测试
+        run: uv run --project apps/api --extra dev -- python -m pytest apps/api/tests -q
+
+  frontend:
+    name: 前端测试、Lint 与构建
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 设置 Node ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: 启用 Corepack
+        run: corepack enable
+
+      - name: 获取 pnpm 缓存目录
+        id: pnpm-cache
+        shell: bash
+        run: echo "STORE_PATH=$(pnpm store path --silent)" >> "$GITHUB_OUTPUT"
+
+      - name: 恢复 pnpm 缓存
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
+          key: pnpm-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+          restore-keys: |
+            pnpm-${{ runner.os }}-
+
+      - name: 安装依赖
+        run: pnpm install --frozen-lockfile
+
+      - name: Lint
+        run: pnpm run lint:web
+
+      - name: 单元测试
+        run: pnpm run test:web
+
+      - name: 生产构建
+        run: pnpm run build
+
+  docker:
+    name: 校验 Docker 编排
+    runs-on: ubuntu-latest
+    # docker-compose.yml 用 :? 语法强制要求这两个变量，未提供时会直接报错退出。
+    env:
+      JIAXIU_ADMIN_INITIAL_PASSWORD: ci-placeholder-password
+      JIAXIU_CONTRIBUTOR_INITIAL_PASSWORD: ci-placeholder-password
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 校验 compose 配置
+        run: docker compose config --quiet

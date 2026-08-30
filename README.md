@@ -13,6 +13,7 @@
 - [首次登录与投稿](#首次登录与投稿)
 - [项目结构](#项目结构)
 - [开发与测试命令](#开发与测试命令)
+- [CI/CD](#cicd)
 - [架构与数据](#架构与数据)
 - [常见问题](#常见问题)
 - [生产注意事项](#生产注意事项)
@@ -204,6 +205,65 @@ uv run --project apps/api --extra dev -- python -m pytest apps/api/tests -q
 ```
 
 后端测试依赖 `dev` 可选依赖组，必须使用 `--extra dev`，否则会报 `No module named pytest`。
+
+> `pnpm run test:e2e` 需要本地安装 Playwright 浏览器（`pnpm --dir apps/web exec playwright install`），仓库未附带 Playwright 配置，因此 CI 不运行 E2E。
+
+## CI/CD
+
+项目使用 GitHub Actions，配置文件位于 `.github/workflows/`。
+
+### CI（自动）
+
+`ci.yml` 在**推送到 `main`** 和**所有针对 `main` 的 Pull Request** 时自动触发，包含 3 个并行任务：
+
+| 任务 | 环境 | 执行的检查 |
+| --- | --- | --- |
+| `backend` | Python 3.12 + uv | `ruff check`、`pytest` |
+| `frontend` | Node 22 + pnpm | ESLint、`vitest`、生产构建 |
+| `docker` | Docker | `docker compose config` 校验编排 |
+
+查看结果：仓库页面 → **Actions** 标签页。
+
+也可以在本地复现 CI 的全部检查（命令与 CI 完全一致）：
+
+```powershell
+uv run --project apps/api --extra dev -- ruff check apps/api
+uv run --project apps/api --extra dev -- python -m pytest apps/api/tests -q
+corepack pnpm install --frozen-lockfile
+corepack pnpm run lint:web
+corepack pnpm run test:web
+corepack pnpm run build
+```
+
+### CD（手动或打标签）
+
+`cd.yml` 构建 API 与 Web 镜像并推送到 GitHub Container Registry（GHCR）。它**不会**在普通推送时运行，仅在以下情况触发：
+
+```powershell
+# 方式一：打标签推送
+git tag v0.1.0
+git push origin v0.1.0
+
+# 方式二：网页端手动触发
+# Actions → CD → Run workflow → 填写 tag（如 latest）
+```
+
+推送后的镜像地址：
+
+```text
+ghcr.io/<用户名>/jiaxiu-mvp-api:<tag>
+ghcr.io/<用户名>/jiaxiu-mvp-web:<tag>
+```
+
+首次使用 GHCR 需在仓库 **Settings → Actions → General → Workflow permissions** 中勾选 **Read and write permissions**，否则推送会因权限不足失败。
+
+### 首次启用
+
+工作流文件随仓库一起提交，推送到 GitHub 后即自动生效，无需额外配置。若 Actions 标签页看不到任务：
+
+1. 确认文件位于 `.github/workflows/` 且扩展名为 `.yml`。
+2. 确认推送到了默认分支 `main`。
+3. 检查仓库 **Settings → Actions → General** 中 Actions 已启用（未被禁用）。
 
 ## 架构与数据
 
