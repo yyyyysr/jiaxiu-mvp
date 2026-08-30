@@ -6,6 +6,7 @@ from app.schemas.scene import EvidenceType, ReviewStatus, Season
 
 ChatRole = Literal["user", "assistant"]
 ResponseMode = Literal["demo", "model"]
+GuideScope = Literal["account", "guest"]
 
 MessageText = Annotated[
     str, StringConstraints(strip_whitespace=True, min_length=1, max_length=1000)
@@ -16,6 +17,8 @@ AnswerText = Annotated[
 BoundedStatus = Annotated[
     str, StringConstraints(strip_whitespace=True, min_length=1, max_length=96)
 ]
+WorkId = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=128)]
+Timestamp = Annotated[str, StringConstraints(min_length=1, max_length=64)]
 
 
 class StrictModel(BaseModel):
@@ -46,7 +49,9 @@ class ChatMessage(StrictModel):
 class ChatRequest(StrictModel):
     message: MessageText
     season: Season | None = None
-    history: list[ChatMessage] = Field(default_factory=list, max_length=8)
+    history: list[ChatMessage] = Field(default_factory=list, max_length=16)
+    # The work the reader currently has open, so "这首诗" resolves without them naming it again.
+    context_work_id: WorkId | None = None
 
 
 class SceneAction(StrictModel):
@@ -90,6 +95,7 @@ class Evidence(StrictModel):
         str, StringConstraints(min_length=1, max_length=240)
     ] | None = None
     season_association: SeasonAssociation | None
+    page_context: bool = False
 
 
 class ProviderAnswer(StrictModel):
@@ -100,3 +106,17 @@ class ProviderAnswer(StrictModel):
         Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=128)]
     ] = Field(max_length=5)
     scene_action: dict[str, str] | None
+
+
+class GuideTurn(StrictModel):
+    """One filed exchange, replayed when a reader returns to the guide."""
+
+    role: ChatRole
+    content: AnswerText
+    created_at: Timestamp
+    response: ChatResponse | None = None
+
+
+class GuideConversation(StrictModel):
+    scope: GuideScope
+    messages: list[GuideTurn] = Field(default_factory=list, max_length=40)

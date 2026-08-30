@@ -13,6 +13,8 @@ import type {
   ChangePasswordRequest,
   CreateUserRequest,
   GuideCitation,
+  GuideConversation,
+  GuideTurn,
   LoginRequest,
   ModerationReasonRequest,
   ResearchStatus,
@@ -196,6 +198,9 @@ const RESEARCH_STATUS_KEYS = ["authenticity_status", "completeness", "transcript
 const SEASON_ASSOCIATION_KEYS = ["season", "is_primary", "evidence_type", "evidence_quote", "review_status"] as const
 const CHAT_SEASONS = ["spring", "summer", "autumn", "winter"] as const
 const SEASON_EVIDENCE_TYPES = ["explicit_title", "explicit_date", "explicit_text"] as const
+const GUIDE_TURN_KEYS = ["role", "content", "created_at", "response"] as const
+const GUIDE_CONVERSATION_KEYS = ["scope", "messages"] as const
+const MAX_GUIDE_TURNS = 40
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value)
@@ -293,6 +298,26 @@ export function validateChatResponse(value: unknown): ChatResponse {
     uncertainty: value.uncertainty,
     mode: value.mode,
   }
+}
+
+function parseGuideTurn(value: unknown): GuideTurn {
+  if (!isRecord(value) || !hasExactKeys(value, GUIDE_TURN_KEYS)) invalidChatResponse("invalid guide turn")
+  if (value.role !== "user" && value.role !== "assistant") invalidChatResponse("invalid guide turn role")
+  if (!isBoundedString(value.content, 4_000)) invalidChatResponse("invalid guide turn text")
+  if (!isBoundedString(value.created_at, 64)) invalidChatResponse("invalid guide turn timestamp")
+  return {
+    role: value.role,
+    content: value.content,
+    created_at: value.created_at,
+    response: value.response === null ? null : validateChatResponse(value.response),
+  }
+}
+
+export function validateGuideConversation(value: unknown): GuideConversation {
+  if (!isRecord(value) || !hasExactKeys(value, GUIDE_CONVERSATION_KEYS)) invalidChatResponse("unexpected conversation fields")
+  if (value.scope !== "account" && value.scope !== "guest") invalidChatResponse("invalid conversation scope")
+  if (!Array.isArray(value.messages) || value.messages.length > MAX_GUIDE_TURNS) invalidChatResponse("invalid conversation length")
+  return { scope: value.scope, messages: value.messages.map(parseGuideTurn) }
 }
 
 function queryString(values: Record<string, string | number | boolean | null | undefined>): string {
@@ -560,5 +585,16 @@ export const api = {
       body: JSON.stringify(payload),
     })
     return validateChatResponse(value)
+  },
+
+  async getGuideConversation(signal?: AbortSignal): Promise<GuideConversation> {
+    return validateGuideConversation(await request<unknown>("/agent/conversation", { signal }))
+  },
+
+  clearGuideConversation(csrfToken: string | null, signal?: AbortSignal): Promise<void> {
+    // Guests hold no CSRF token; the server only demands one once a thread belongs to an account.
+    const headers = new Headers()
+    if (csrfToken) headers.set("X-CSRF-Token", csrfToken)
+    return request<void>("/agent/conversation", { method: "DELETE", signal, headers })
   },
 }

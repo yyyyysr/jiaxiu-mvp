@@ -3,6 +3,7 @@ import { Link, useParams, useSearchParams } from "react-router-dom"
 
 import { FacsimileUpload } from "../features/facsimiles/FacsimileUpload"
 import { FacsimileViewer } from "../features/facsimiles/FacsimileViewer"
+import { useGuideSubject } from "../features/guide/GuideProvider"
 import { ResearchStatus } from "../features/works/ResearchStatus"
 import { api } from "../lib/api"
 import type { AuthorDetail, Season, TextVariant } from "../lib/types"
@@ -32,6 +33,9 @@ export function WorkDetailPage() {
   const includeRelated = searchParams.get("include_related") === "true"
   const workQuery = useQuery({ queryKey: ["work", workId, includeRelated], queryFn: () => api.getWork(workId, includeRelated) })
   const facsimileQuery = useQuery({ queryKey: ["facsimiles", workId, includeRelated], queryFn: () => api.getFacsimiles(workId, includeRelated), enabled: Boolean(workQuery.data) })
+
+  // Hand the open poem to the guide so it can discuss this text without being told which one it is.
+  useGuideSubject(workQuery.data ? { workId, title: workQuery.data.title, authors: workQuery.data.authors } : null)
 
   if (workQuery.isLoading) return <main className="page-shell" id="main-content" tabIndex={-1}><p className="system-message">展卷中，请稍候。</p></main>
   if (workQuery.isError || !workQuery.data) return <main className="page-shell" id="main-content" tabIndex={-1}><p role="alert" className="system-message system-message--error">此篇暂不可读取，或不在当前收录范围。</p><Link to="/works">返回题咏志</Link></main>

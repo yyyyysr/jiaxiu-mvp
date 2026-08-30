@@ -99,6 +99,41 @@
   .guide-panel__portrait { opacity: .85; }
 }
 
+/* The guide keeps a transcript. A reader can see what they asked, and what came back, turn by turn. */
+.guide-console { display: grid; gap: .5rem; }
+.guide-console .guide-panel__invitation, .guide-console .guide-form, .guide-console .guide-notice { margin: 0; }
+.guide-subject { display: flex; flex-wrap: wrap; gap: .35rem .5rem; align-items: baseline; margin: 0; padding: .35rem .55rem; border-left: 2px solid var(--water); background: color-mix(in srgb, var(--water) 11%, transparent); color: var(--ink-soft); font: .62rem/1.5 var(--sans); letter-spacing: .07em; }
+.guide-subject b { color: var(--ink); font-weight: 400; font-size: .7rem; }
+.guide-thread { display: grid; gap: .55rem; margin: 0; padding: 0; list-style: none; }
+.guide-turn { min-width: 0; }
+.guide-turn--user { justify-self: end; max-width: 88%; }
+.guide-turn__question { display: flex; gap: .45rem; margin: 0; padding: .4rem .6rem; background: var(--ink); color: var(--paper-light); font: .71rem/1.6 var(--sans); }
+.guide-turn__question > span { flex: none; color: var(--bronze); }
+.guide-turn__answer { margin: 0; font: .72rem/1.78 var(--sans); }
+.guide-turn--assistant .guide-answer { margin-top: 0; }
+.guide-thread__end { height: 0; }
+.guide-console__footer { display: flex; flex-wrap: wrap; justify-content: space-between; gap: .4rem .8rem; align-items: center; padding-top: .4rem; border-top: 1px solid var(--rule); }
+.guide-console__footer p { margin: 0; color: var(--ink-soft); font: .53rem/1.5 var(--sans); letter-spacing: .08em; }
+.guide-console__footer button { min-height: 0; padding: .15rem .3rem; border: 0; border-bottom: 1px solid currentColor; background: transparent; color: var(--vermilion); font: .58rem var(--sans); letter-spacing: .1em; }
+
+/* Away from the scene, the guide waits as a folded rail on the margin of every page. */
+.guide-dock { position: fixed; z-index: 40; right: 0; bottom: clamp(1rem, 7vh, 3.5rem); }
+.guide-dock__rail { display: grid; gap: .45rem; place-items: center; padding: .85rem .45rem; border: 1px solid rgba(250,247,239,.5); border-right: 0; background: rgba(16,29,25,.88); color: var(--paper-light); font: .72rem var(--sans); letter-spacing: .22em; writing-mode: vertical-rl; backdrop-filter: blur(8px); }
+.guide-dock__rail > span:first-child { display: grid; place-items: center; width: 1.5rem; height: 1.5rem; border: 1px solid var(--vermilion); color: #f0cfc3; writing-mode: horizontal-tb; letter-spacing: 0; }
+.guide-dock__panel { display: flex; flex-direction: column; width: min(23.5rem, calc(100vw - 1.4rem)); max-height: min(76vh, 40rem); margin-right: .55rem; background: linear-gradient(105deg, rgba(250,247,239,.98), rgba(236,229,212,.96)); box-shadow: inset .25rem 0 rgba(181,143,84,.18), inset .33rem 0 0 rgba(165,71,61,.72), 0 1.1rem 2.4rem rgba(4,15,12,.3); }
+.guide-dock__header { display: flex; justify-content: space-between; gap: .8rem; align-items: start; padding: .75rem 1rem .5rem 1.15rem; border-bottom: 1px solid var(--rule); }
+.guide-dock__header p { margin: 0 0 .15rem; color: var(--water); font: .56rem/1.4 var(--sans); letter-spacing: .18em; }
+.guide-dock__header h2 { margin: 0; font: 1.55rem/1 var(--serif); font-weight: 400; letter-spacing: .08em; }
+.guide-dock__header button { flex: none; min-height: 0; padding: .15rem .2rem; border: 0; border-bottom: 1px solid var(--rule); background: transparent; color: var(--ink-soft); font: .62rem var(--sans); letter-spacing: .12em; }
+.guide-dock__body { flex: 1 1 auto; min-height: 0; overflow: auto; padding: .8rem 1rem .95rem 1.15rem; scrollbar-width: thin; scrollbar-color: var(--bronze) transparent; }
+
+@media (max-width: 760px) {
+  .guide-dock { bottom: .7rem; }
+  .guide-dock__panel { width: calc(100vw - 1.1rem); max-height: 74svh; }
+  .guide-dock__body { padding: .7rem .8rem .85rem 1rem; }
+  .guide-turn--user { max-width: 93%; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .guide-notice--pending p::after { animation: none; width: auto; }
 }

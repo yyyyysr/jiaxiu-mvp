@@ -12,6 +12,8 @@ import { WorkDetailPage } from "../pages/WorkDetailPage"
 import { WorksPage } from "../pages/WorksPage"
 import { AuthProvider } from "../features/auth/AuthProvider"
 import { ProtectedRoute } from "../features/auth/ProtectedRoute"
+import { GuideDock } from "../features/guide/GuideDock"
+import { GuideProvider } from "../features/guide/GuideProvider"
 import { ChangePasswordPage } from "../pages/ChangePasswordPage"
 import { LoginPage } from "../pages/LoginPage"
 import { ContributionPage } from "../pages/ContributionPage"
@@ -74,11 +76,12 @@ export function HeaderBoundary({ children }: { children: ReactNode }) {
 
 export function AppFrame({ children }: { children: ReactNode }) {
   return (
-    <>
+    <GuideProvider>
       <SkipLink />
       <HeaderBoundary><SiteHeader /></HeaderBoundary>
       <ErrorBoundary>{children}</ErrorBoundary>
-    </>
+      <ErrorBoundary fallback={null}><GuideDock /></ErrorBoundary>
+    </GuideProvider>
   )
 }
 

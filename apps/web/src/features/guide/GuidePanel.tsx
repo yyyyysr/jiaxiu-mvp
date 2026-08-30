@@ -1,26 +1,15 @@
-import { FormEvent, useEffect, useRef, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 
-import { ApiError, api } from "../../lib/api"
-import type { ChatHistoryItem, ChatResponse } from "../../lib/types"
 import { useSceneStore } from "../../scene/store"
 import type { SceneAction } from "../../scene/store"
-import { GuideAnswer } from "./GuideAnswer"
+import { GuideConsole } from "./GuideConsole"
 
-const QUICK_PROMPTS = ["秋日登楼", "四季何景", "诗中甲秀", "从河岸看"] as const
 const SEASON_OPENINGS = {
   spring: "春水新涨，宜从河岸听一阙新晴。",
   summer: "夏树含风，可向桥畔问一声水阔。",
   autumn: "秋光入槛，且从题咏辨一城高爽。",
   winter: "冬水含烟，且循霁色访一段旧题。",
 } as const
-const MAX_MESSAGE_LENGTH = 1_000
-const MAX_HISTORY_ITEMS = 8
-
-type GuideStatus = "idle" | "pending" | "ready" | "cancelled" | "rate-limited" | "error"
-
-function isAbortError(error: unknown): boolean {
-  return error instanceof DOMException && error.name === "AbortError"
-}
 
 function GuidePortrait() {
   return (
@@ -44,27 +33,9 @@ type GuidePanelProps = {
 
 export function GuidePanel({ onSceneAction }: GuidePanelProps = {}) {
   const season = useSceneStore((state) => state.season)
-  const applySceneAction = useSceneStore((state) => state.applySceneAction)
   const [open, setOpen] = useState(() => window.innerWidth > 760)
-  const [input, setInput] = useState("")
-  const [response, setResponse] = useState<ChatResponse>()
-  const [history, setHistory] = useState<ChatHistoryItem[]>([])
-  const [lastQuestion, setLastQuestion] = useState("")
-  const [status, setStatus] = useState<GuideStatus>("idle")
-  const requestRef = useRef<AbortController | null>(null)
-  const requestIdRef = useRef(0)
-  const mountedRef = useRef(true)
   const entryRef = useRef<HTMLButtonElement>(null)
   const restoreFocusRef = useRef(false)
-
-  useEffect(() => {
-    mountedRef.current = true
-    return () => {
-      mountedRef.current = false
-      requestIdRef.current += 1
-      requestRef.current?.abort()
-    }
-  }, [])
 
   useEffect(() => {
     if (!open && restoreFocusRef.current) {
@@ -73,63 +44,10 @@ export function GuidePanel({ onSceneAction }: GuidePanelProps = {}) {
     }
   }, [open])
 
-  const ask = async (rawMessage: string) => {
-    const message = rawMessage.trim().slice(0, MAX_MESSAGE_LENGTH)
-    if (!message) return
-
-    const requestId = requestIdRef.current + 1
-    requestIdRef.current = requestId
-    requestRef.current?.abort()
-    const controller = new AbortController()
-    requestRef.current = controller
-    setLastQuestion(message)
-    setResponse(undefined)
-    setStatus("pending")
-
-    try {
-      const next = await api.chat({ message, season, history: history.slice(-MAX_HISTORY_ITEMS) }, controller.signal)
-      if (!mountedRef.current || requestId !== requestIdRef.current) return
-      setResponse(next)
-      setHistory((current) => [
-        ...current,
-        { role: "user", content: message } as const,
-        { role: "assistant", content: next.answer.slice(0, MAX_MESSAGE_LENGTH) } as const,
-      ].slice(-MAX_HISTORY_ITEMS))
-      setStatus("ready")
-      setInput("")
-    } catch (error) {
-      if (!mountedRef.current || requestId !== requestIdRef.current) return
-      if (isAbortError(error)) setStatus("cancelled")
-      else if (error instanceof ApiError && error.status === 429) setStatus("rate-limited")
-      else setStatus("error")
-    } finally {
-      if (requestId === requestIdRef.current) requestRef.current = null
-    }
-  }
-
-  const cancel = () => {
-    requestIdRef.current += 1
-    requestRef.current?.abort()
-    requestRef.current = null
-    setResponse(undefined)
-    setStatus("cancelled")
-  }
-
+  // Folding the panel away only hides it: the thread itself belongs to the reader, not to the panel.
   const close = () => {
-    requestIdRef.current += 1
-    requestRef.current?.abort()
-    requestRef.current = null
-    setOpen(false)
-    setInput("")
-    setHistory([])
-    setResponse(undefined)
-    setStatus("idle")
     restoreFocusRef.current = true
-  }
-
-  const submit = (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault()
-    void ask(input)
+    setOpen(false)
   }
 
   if (!open) {
@@ -154,54 +72,7 @@ export function GuidePanel({ onSceneAction }: GuidePanelProps = {}) {
           </div>
           <button className="guide-panel__close guide-hit-target" type="button" onClick={close}>收起导览</button>
         </header>
-        <p className="guide-panel__invitation">{SEASON_OPENINGS[season]}</p>
-        <div className="guide-prompts" aria-label="快捷提问">
-          {QUICK_PROMPTS.map((prompt, index) => (
-            <button className="guide-hit-target" type="button" key={prompt} onClick={() => { void ask(prompt) }}>
-              <span aria-hidden="true">{String(index + 1).padStart(2, "0")}</span>{prompt}
-            </button>
-          ))}
-        </div>
-        <form className="guide-form" aria-label="向浮玉客提问" onSubmit={submit}>
-          <label htmlFor="guide-question">向浮玉客提问</label>
-          <div>
-            <input
-              id="guide-question"
-              value={input}
-              maxLength={MAX_MESSAGE_LENGTH}
-              onChange={(event) => setInput(event.target.value)}
-              placeholder="留一行问句……"
-              autoComplete="off"
-            />
-            <button className="guide-hit-target" type="submit" disabled={!input.trim()}>送出问题</button>
-          </div>
-          <span aria-live="polite">{input.length} / {MAX_MESSAGE_LENGTH}</span>
-        </form>
-
-        {status === "pending" && (
-          <div className="guide-notice guide-notice--pending">
-            <p role="status">浮玉客正在循诗检索</p>
-            <button className="guide-hit-target" type="button" onClick={cancel}>取消本次提问</button>
-          </div>
-        )}
-        {status === "cancelled" && <p className="guide-notice" role="status">已取消本次寻访，可换一问。</p>}
-        {status === "rate-limited" && <p className="guide-notice guide-notice--error" role="alert">问得太密，且在水边稍候片刻再来。</p>}
-        {status === "error" && (
-          <div className="guide-notice guide-notice--error" role="alert">
-            <p>问句未能抵达，网络或服务暂时不可用。</p>
-            <button className="guide-hit-target" type="button" onClick={() => { void ask(lastQuestion) }}>再循此问</button>
-          </div>
-        )}
-        {response && (
-          <GuideAnswer
-            response={response}
-            onApplyScene={() => {
-              if (!response.scene_action) return
-              if (onSceneAction) onSceneAction(response.scene_action)
-              else applySceneAction(response.scene_action)
-            }}
-          />
-        )}
+        <GuideConsole invitation={SEASON_OPENINGS[season]} onSceneAction={onSceneAction} />
       </div>
     </aside>
   )

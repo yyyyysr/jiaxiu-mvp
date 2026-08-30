@@ -1,6 +1,6 @@
 import sqlite3
 
-SCHEMA_VERSION = 5
+SCHEMA_VERSION = 6
 
 SCHEMA_V1_STATEMENTS = (
     """
@@ -233,6 +233,52 @@ SCHEMA_V5_STATEMENTS = (
     """,
 )
 
+# The guide keeps one running thread per reader. Signed-in readers are keyed by account so the thread
+# survives new devices; anonymous readers are keyed by the digest of a browser cookie, which makes
+# "clear cookies" the reset gesture and keeps the raw token out of the database.
+SCHEMA_V6_STATEMENTS = (
+    """
+    CREATE TABLE guide_conversations (
+      conversation_id TEXT PRIMARY KEY
+        CHECK (length(conversation_id) = 32 AND conversation_id NOT GLOB '*[^0-9a-f]*'),
+      user_id TEXT REFERENCES users(user_id) ON DELETE CASCADE,
+      guest_digest TEXT
+        CHECK (
+          guest_digest IS NULL
+          OR (length(guest_digest) = 64 AND guest_digest NOT GLOB '*[^0-9a-f]*')
+        ),
+      created_at TEXT NOT NULL,
+      updated_at TEXT NOT NULL,
+      expires_at TEXT NOT NULL,
+      CHECK ((user_id IS NULL) <> (guest_digest IS NULL))
+    )
+    """,
+    """
+    CREATE UNIQUE INDEX guide_conversations_user
+    ON guide_conversations(user_id) WHERE user_id IS NOT NULL
+    """,
+    """
+    CREATE UNIQUE INDEX guide_conversations_guest
+    ON guide_conversations(guest_digest) WHERE guest_digest IS NOT NULL
+    """,
+    "CREATE INDEX guide_conversations_expiry ON guide_conversations(expires_at)",
+    """
+    CREATE TABLE guide_messages (
+      message_sequence INTEGER PRIMARY KEY AUTOINCREMENT,
+      conversation_id TEXT NOT NULL
+        REFERENCES guide_conversations(conversation_id) ON DELETE CASCADE,
+      role TEXT NOT NULL CHECK (role IN ('user', 'assistant')),
+      content TEXT NOT NULL CHECK (length(content) <= 4000),
+      response_json TEXT NOT NULL DEFAULT '' CHECK (length(response_json) <= 16000),
+      created_at TEXT NOT NULL
+    )
+    """,
+    """
+    CREATE INDEX guide_messages_thread
+    ON guide_messages(conversation_id, message_sequence)
+    """,
+)
+
 
 def migrate_schema(connection: sqlite3.Connection) -> None:
     current_version = connection.execute("PRAGMA user_version").fetchone()[0]
@@ -262,3 +308,8 @@ def migrate_schema(connection: sqlite3.Connection) -> None:
         for statement in SCHEMA_V5_STATEMENTS:
             connection.execute(statement)
         connection.execute("PRAGMA user_version = 5")
+        current_version = 5
+    if current_version < 6:
+        for statement in SCHEMA_V6_STATEMENTS:
+            connection.execute(statement)
+        connection.execute("PRAGMA user_version = 6")

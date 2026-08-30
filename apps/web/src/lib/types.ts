@@ -157,7 +157,12 @@ export type SeasonWorksResponse = {
 export type SceneAction = { season: Season }
 export type ChatMode = "demo" | "model"
 export type ChatHistoryItem = { role: "user" | "assistant"; content: string }
-export type ChatRequest = { message: string; season?: Season | null; history?: ChatHistoryItem[] }
+export type ChatRequest = {
+  message: string
+  season?: Season | null
+  history?: ChatHistoryItem[]
+  context_work_id?: string | null
+}
 export type SeasonAssociation = {
   season: Season
   is_primary: boolean
@@ -182,6 +187,19 @@ export type ChatResponse = {
   scene_action: SceneAction | null
   uncertainty: string
   mode: ChatMode
+}
+
+/** Guest threads live against a browser cookie; account threads follow the reader across devices. */
+export type GuideScope = "account" | "guest"
+export type GuideTurn = {
+  role: "user" | "assistant"
+  content: string
+  created_at: string
+  response: ChatResponse | null
+}
+export type GuideConversation = {
+  scope: GuideScope
+  messages: GuideTurn[]
 }
 
 export type WorkFilters = {

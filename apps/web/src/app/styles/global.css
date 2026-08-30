@@ -526,6 +526,117 @@ html body .guide-entry small,
   .contribution-desk__fields, .submission-detail__form, .folio-intake { grid-template-columns: 1fr; }
   .folio-intake__list li, .submission-list > li { grid-template-columns: minmax(0, 1fr); }
   .folio-intake__actions { justify-content: start; }
+}
+
+/* One shared typographic scale. Titles used to dwarf the prose; they now sit a step above it so the
+   reading text carries the page, and the primary navigation gains enough weight to stay legible. */
+.site-header__nav { font-size: var(--fs-meta); letter-spacing: .14em; }
+.site-header__nav a { padding: .6rem 1.05rem; }
+.site-header__account summary span { font-size: var(--fs-meta); }
+.site-header__account summary small { font-size: var(--fs-micro); }
+.site-header__account-panel p { font-size: var(--fs-micro); }
+.site-header__account-panel button { font-size: var(--fs-meta); }
+
+.page-intro { gap: clamp(1.4rem, 3.4vw, 3.4rem); margin: .5rem 0 clamp(2rem, 5vw, 3.6rem); }
+.page-intro h1 { font-size: var(--fs-display); line-height: 1.18; letter-spacing: -.02em; }
+.page-intro__lede { margin: 1.1rem 0 0; font-size: var(--fs-lede); line-height: var(--lh-body); }
+.vertical-slip { padding: .7rem .45rem 1.1rem; font-size: var(--fs-body); letter-spacing: .22em; }
+.kicker { margin-bottom: .8rem; font-size: var(--fs-micro); }
+
+.auth-page { padding-top: 7rem; }
+.auth-sheet__heading h1 { font-size: var(--fs-page-title); line-height: 1.18; letter-spacing: -.02em; }
+.auth-sheet__heading > p:last-child { margin: 1.2rem 0 0; font-size: var(--fs-body); line-height: var(--lh-body); }
+.auth-sheet label { font-size: var(--fs-meta); }
+.auth-sheet input { font-size: var(--fs-lede); }
+.auth-sheet button[type="submit"] { font-size: var(--fs-meta); }
+.auth-sheet__footnote { font-size: var(--fs-micro); }
+
+.detail-heading h1 { font-size: var(--fs-page-title); line-height: 1.2; letter-spacing: -.02em; }
+.detail-heading > div > p:last-child { font-size: var(--fs-body); }
+.detail-heading__aliases { font-size: var(--fs-meta); }
+.admin-page > h1,
+.app-error h1,
+.contribution-desk__heading h1,
+.submissions-page__heading h1,
+.submission-detail h1 { font-size: var(--fs-page-title); line-height: 1.18; letter-spacing: -.02em; }
+.contribution-desk__heading > p:last-child,
+.submissions-page__heading > p:last-child,
+.app-error [role="alert"] p { font-size: var(--fs-body); line-height: var(--lh-body); }
+
+.work-card h2 { font-size: var(--fs-subsection); }
+.work-card--compact h2 { font-size: 1.04rem; }
+.work-card__author { font-size: var(--fs-body); }
+.work-card__eyebrow { font-size: var(--fs-micro); }
+.work-card__excerpt { font-size: var(--fs-body); line-height: 1.85; }
+.work-card__folio b { font-size: 1.35rem; }
+.result-count { margin-bottom: 1.4rem; font-size: var(--fs-meta); }
+.archive-margin p { font-size: var(--fs-meta); }
+.search-form input { font-size: var(--fs-lede); }
+
+.method-grid h2 { font-size: var(--fs-section); }
+.method-grid p { font-size: var(--fs-body); line-height: var(--lh-body); }
+.method-grid section > span { font-size: 1.8rem; }
+.research-interpretation-grid h2,
+.variants-section h2,
+.sources-section h2 { margin-bottom: 1rem; font-size: var(--fs-section); }
+.research-interpretation-grid > section > p:not(.kicker) { font-size: var(--fs-body); line-height: var(--lh-body); }
+.sources-section h3 { font-size: var(--fs-subsection); }
+.variant-list summary span { font-size: var(--fs-subsection); }
+.variant-sheet { font-size: var(--fs-lede); }
+.poem-text { font-size: clamp(1.2rem, 2vw, 1.6rem); line-height: 2.1; }
+
+/* Catalogue sections announce themselves with a tinted plate instead of a rule, so 研究状态、作者身份、
+   影像记录 and 著录信息 stay distinguishable from the values recorded beneath them. */
+.research-margin { font: var(--fs-meta) var(--sans); line-height: 1.8; }
+.research-margin section { margin-bottom: 2.1rem; }
+.research-margin h2 {
+  display: flex;
+  gap: .55rem;
+  align-items: center;
+  margin: 0 0 .9rem;
+  padding: .45rem .7rem;
+  border-bottom: 0;
+  border-left: 3px solid var(--vermilion);
+  background: var(--field-fill);
+  box-shadow: inset 0 -1px 0 color-mix(in srgb, var(--ink) 20%, transparent);
+  font: var(--fs-subsection) var(--serif);
+  font-weight: 400;
+  letter-spacing: .16em;
+}
+.research-margin h2::before { content: ""; flex: none; width: .34rem; height: .34rem; background: var(--vermilion); transform: rotate(45deg); }
+/* Scoped to the margin: the guide reuses `research-status__details` for its compact citation strip. */
+.research-margin .research-status__details div,
+.research-margin .metadata-list div { grid-template-columns: 6.2rem minmax(0, 1fr); gap: .55rem; padding: 0; }
+.research-margin .research-status__details dt,
+.research-margin .metadata-list dt,
+.submission-detail__readonly dt { padding: .5rem .55rem; background: var(--field-term-fill); color: var(--ink); font-size: var(--fs-micro); letter-spacing: .1em; }
+.research-margin .research-status__details dd,
+.research-margin .metadata-list dd { padding: .5rem 0; font-size: var(--fs-meta); }
+.research-margin .research-status__alert { padding: .3rem .6rem; font-size: var(--fs-micro); }
+.research-margin .author-records h3 { display: inline-block; margin: 0 0 .45rem; padding: .2rem .5rem; background: color-mix(in srgb, var(--bronze) 20%, transparent); font: var(--fs-body) var(--serif); font-weight: 400; }
+.research-margin .author-records p { font-size: var(--fs-meta); }
+
+/* The research notes are four fixed rules, so they belong on a single screen rather than a scroll. */
+.method-page { display: flex; flex-direction: column; min-height: 100vh; padding-top: clamp(6rem, 12vh, 7.5rem); padding-bottom: clamp(1.4rem, 3.5vh, 2.6rem); }
+.method-page .page-intro { margin: 0 0 clamp(1.1rem, 2.8vh, 2.1rem); }
+.method-page .method-grid { flex: 1 1 auto; min-height: 0; max-width: none; grid-template-rows: repeat(2, minmax(0, 1fr)); }
+.method-page .method-grid section { min-height: 0; padding: clamp(.95rem, 2.3vh, 1.9rem) clamp(1.1rem, 2.3vw, 2.3rem); }
+.method-page .method-grid h2 { margin: 0 0 .7rem; }
+.method-page .method-grid section > span { top: .6rem; right: .9rem; }
+
+@media (min-width: 761px) and (max-height: 560px) {
+  .method-page { display: block; min-height: 0; }
+}
+
+@media (max-width: 760px) {
+  .auth-page { padding-top: 3rem; }
+  /* Narrow screens let the header wrap, so the notes fall back to the normal scrolling page. */
+  .method-page { display: block; min-height: 0; padding-top: 9rem; }
+  .method-page .method-grid { grid-template-columns: 1fr; grid-template-rows: none; }
+  .method-page .method-grid section { min-height: 9rem; }
+  .research-margin h2 { letter-spacing: .12em; }
+  .research-margin .research-status__details div,
+  .research-margin .metadata-list div { grid-template-columns: 5.4rem minmax(0, 1fr); }
   .submission-list > li > a { justify-self: start; }
   .contribution-desk__heading { padding-top: 1.5rem; }
 }
