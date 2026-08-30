@@ -1,170 +1,226 @@
 # 浮玉四时：甲秀楼数字人文平台
 
+面向甲秀楼题咏、四时场景与公众协作的数字人文平台。包含可检索的题咏资料、2D/3D 场景、影像查看、投稿审核和"浮玉客"导览问答。
 
-## 项目简介
+## 目录
 
-平台围绕甲秀楼的四季实景、题咏资料和公众协作展开，主要功能包括：
+- [功能概览](#功能概览)
+- [环境要求](#环境要求)
+- [从仓库拉取后首次启动](#从仓库拉取后首次启动)
+- [运行方式](#运行方式)
+- [环境变量](#环境变量)
+- [首次登录与投稿](#首次登录与投稿)
+- [项目结构](#项目结构)
+- [开发与测试命令](#开发与测试命令)
+- [架构与数据](#架构与数据)
+- [常见问题](#常见问题)
+- [生产注意事项](#生产注意事项)
 
-- 春雨、夏日暖阳、秋叶、冬雪等四季场景表现，以及 2D/3D 浏览切换。
-- 甲秀楼题咏检索、作品详情、研究说明和引文导览。
-- 协作者上传诗词资料与影像扫描，内容先保存为待审核状态。
-- 管理员审核、发布或驳回投稿，并管理账号和审计记录。
-- 无外部模型密钥时仍可使用确定性导览；配置兼容模型后可启用模型能力。
+## 功能概览
 
-## 前后端架构
+- **四季场景**：春雨、夏日、秋叶、冬雪，以及 2D/3D 浏览切换。
+- **题咏资料**：全文检索、作品详情、研究状态、来源与影像对读。
+- **浮玉客**：题咏导览、季节推荐与开放的诗意交流。
+- **公众协作**：提交诗词资料或影像，审核后再公开。
+- **管理后台**：审核投稿、管理用户与查看审计记录。
 
-| 层级 | 技术与职责 |
+无外部模型密钥时仍可使用确定性导览；配置兼容模型后可启用模型能力。模型回答中的文献引用只来自当前检索到的数据库证据；无检索证据时会明确作为导览交流而非文献事实。
+
+## 环境要求
+
+| 运行方式 | 需要安装 |
 | --- | --- |
-| Web 前端 | React 19、TypeScript、Vite、Three.js、SparkJS；负责页面、季节视觉、3D 高斯泼溅展示、投稿与管理界面。 |
-| Web 网关 | Nginx；提供静态文件和单页应用路由回退，并将同源 `/api/v1` 请求转发到 API。 |
-| API 后端 | FastAPI、Pydantic；提供题咏、导览、登录、投稿、审核、用户管理与审计接口。 |
-| 数据层 | SQLite；研究数据库随包只读提供，账号、会话、审核状态和上传记录写入独立持久化卷。 |
-| 安全 | Argon2 密码散列、服务端会话、CSRF 校验、角色权限与首次登录强制改密。 |
+| Windows 本地开发 | Python 3.12+、[uv](https://docs.astral.sh/uv/)、Node.js（见 `package.json` 的 `engines`）、Corepack |
+| macOS / Linux 本地开发 | Python 3.12+、uv、Node.js、Corepack、POSIX shell |
+| Docker 部署 | Docker 24+、Docker Compose v2（命令形式为 `docker compose`） |
 
-生产拓扑为浏览器访问 Nginx，Nginx 再转发 API。API 容器不向宿主机暴露端口，外部只需开放 Web 端口。默认数据卷：
+前端使用仓库锁定的 pnpm 版本（见根目录 `package.json` 的 `packageManager`），由 Corepack 自动切换，无需手动安装 pnpm。
 
-- `jiaxiu-app-data`：账号、会话、审核状态和审计数据库。
-- `jiaxiu-submissions`：投稿者上传的私有扫描文件。
+## 从仓库拉取后首次启动
 
-发布包目录中的关键文件：
+```bash
+git clone <仓库地址>
+cd jiaxiu-mvp
+
+# 1. 创建环境变量文件（必须，否则服务无法启动）
+cp .env.example .env
+
+# 2. 编辑 .env：至少替换两个 CHANGE_ME_* 初始密码（长度需为 12-256 字符）
+
+# 3. 启动
+pnpm dev                      # Windows
+sh scripts/run-local.sh       # macOS / Linux
+sh scripts/run-docker.sh -d   # Docker 后台运行
+```
+
+启动后访问：
+
+| 运行方式 | 地址 |
+| --- | --- |
+| 本地开发（前端） | http://127.0.0.1:5173 |
+| 本地开发（API 文档） | http://127.0.0.1:8000/docs |
+| Docker（Nginx） | http://127.0.0.1:8080 |
+
+`.env` 已被 `.gitignore` 排除，不会被提交；仓库中只保留 `.env.example` 模板。
+
+## 运行方式
+
+### Windows 本地开发
+
+```powershell
+pnpm dev
+# 或直接执行脚本，可覆盖端口
+.\scripts\run-local.ps1 -ApiPort 8000 -WebPort 5173
+```
+
+### macOS / Linux 本地开发
+
+```sh
+sh scripts/run-local.sh
+```
+
+脚本会先同步 Python 与前端依赖、按 `.env` 创建初始账号，再启动 API（默认 `8000`）和 Vite 前端（默认 `5173`）。按 `Ctrl+C` 会同时停止两个子进程。
+
+可用 `JIAXIU_API_PORT` 和 `JIAXIU_WEB_DEV_PORT` 覆盖两个本地端口：
+
+```sh
+JIAXIU_API_PORT=8001 JIAXIU_WEB_DEV_PORT=5273 sh scripts/run-local.sh
+```
+
+> 注意：这两个变量仅对本地脚本生效。若改了前端端口，需同步把新来源加入 `.env` 的 `JIAXIU_CORS_ALLOWED_ORIGINS`。
+
+API 从项目根目录读取 `.env`，即使 uvicorn 的工作目录是 `apps/api` 也无需复制配置文件。
+
+### Docker 部署
+
+```sh
+sh scripts/run-docker.sh        # 前台运行
+sh scripts/run-docker.sh -d     # 后台运行
+```
+
+脚本先执行 `docker compose config` 校验配置，再构建并启动服务。API 容器不向宿主机暴露端口，外部只需开放 Web 端口。
+
+不要执行 `docker compose down -v`，除非明确要删除全部账号、审核记录和投稿文件；该操作不可通过项目包恢复。
+
+## 环境变量
+
+复制 `.env.example` 为 `.env` 后按需修改，各项含义见模板内注释。要点：
+
+| 变量 | 说明 |
+| --- | --- |
+| `JIAXIU_WEB_PORT` | docker-compose 中 Nginx 对外端口，默认 `8080` |
+| `JIAXIU_ADMIN_*` / `JIAXIU_CONTRIBUTOR_*` | 初始账号。仅在账号不存在时用于创建，密码需 12-256 字符 |
+| `JIAXIU_SESSION_COOKIE_SECURE` | HTTPS 上线保持 `true`；本机纯 HTTP 验证改为 `false` |
+| `JIAXIU_CORS_ALLOWED_ORIGINS` | 浏览器来源白名单，**必须是合法 JSON 数组** |
+| `JIAXIU_MODEL_*` | 可选。三项同时设置才启用模型，留空则使用确定性导览 |
+
+两个易错点：
+
+1. **CORS 必须是合法 JSON 数组**，每个来源单独加引号：
+
+   ```dotenv
+   # 正确
+   JIAXIU_CORS_ALLOWED_ORIGINS=["http://localhost:5173", "http://127.0.0.1:8080"]
+   # 错误：逗号写在引号内，会被解析成单个非法来源，导致全部跨域请求被拦截
+   JIAXIU_CORS_ALLOWED_ORIGINS=["http://localhost:5173, http://127.0.0.1:8080"]
+   ```
+
+2. **初始账号变量只负责首次创建**。账号建好后修改 `.env` 不会重置密码；如需重置请登录修改或由管理员在后台重置。
+
+## 首次登录与投稿
+
+本地脚本和 Docker 首次启动都会按 `.env` 创建账号：
+
+| 账号 | 角色 | 权限 |
+| --- | --- | --- |
+| `admin` | 管理员 | 审核投稿、管理用户、查看审计记录 |
+| `contributor` | 协作者 | 提交题咏资料与影像，查看自己的投稿 |
+
+访问 `/login` 登录，**首次登录后必须修改初始密码**。
+
+投稿内容先进入待审核状态，只有管理员发布后才会进入公开展示。
+
+> 本地开发时若账号创建失败（例如 `.env` 未配置或密码长度不足），启动脚本会打印警告但继续启动服务，此时登录会提示"用户名或密码错误"。检查 `.env` 后重新执行启动脚本即可。
+
+## 项目结构
 
 ```text
 jiaxiu-mvp/
-├─ apps/api/                  FastAPI 后端
-├─ apps/web/                  React 前端与静态资源
-├─ data/                      只读研究数据库与高清影像
-│   ├─ facsimiles/             题咏影像扫描（只读挂载，共 39 张）
-│   └─ submissions/            投稿文件私有目录（空，运行期写入数据卷）
-├─ deploy/                    Dockerfile、Nginx 与启动脚本
-├─ docker-compose.yml         生产编排
-├─ .env.example               环境变量模板
-└─ README.md                  本说明
-```
-面向甲秀楼题咏、四时场景与公众协作的数字人文平台。项目包含可检索的题咏资料、2D/3D 场景、影像查看、投稿审核和“浮玉客”导览问答。
-
-## 快速上线
-## 先选择运行方式
-
-### 1. 环境要求
-| 场景 | 需要安装 | 命令 | 访问地址 |
-| --- | --- | --- | --- |
-| Windows 本地开发 | Python 3.12、uv、Node.js、Corepack | `pnpm dev` | `http://127.0.0.1:5173` |
-| macOS/Linux 本地开发 | Python 3.12、uv、Node.js、Corepack、POSIX shell | `sh scripts/run-local.sh` | `http://127.0.0.1:5173` |
-| Docker 部署或本地验收 | Docker 24+、Docker Compose v2 | `sh scripts/run-docker.sh -d` | `http://127.0.0.1:8080` |
-
-- 安装 Docker 24 或更新版本。
-- 安装 Docker Compose v2，命令形式应为 `docker compose`。
-- 建议生产域名已配置 HTTPS；TLS 可由宿主机反向代理、负载均衡器或云网关终止。
-
-### 2. 配置环境变量
-
-在解压后的 `jiaxiu-mvp` 目录执行：
-运行前都应先创建并配置 `.env`：
-
-```powershell
-docker compose up -d --build
-```dotenv
-JIAXIU_MODEL_BASE_URL=https://模型服务地址/v1
-JIAXIU_MODEL_API_KEY=请填写密钥
-JIAXIU_MODEL_NAME=模型名称
+├─ apps/
+│   ├─ api/                    FastAPI 后端
+│   └─ web/                    React 前端与静态资源
+├─ data/                       只读研究数据库与高清影像
+│   ├─ facsimiles/             题咏影像扫描（只读，共 39 张）
+│   ├─ jiaxiu_tiyong.sqlite    研究数据库（随包发布）
+│   └─ submissions/            投稿文件私有目录（运行期写入）
+├─ deploy/                     Dockerfile、Nginx 配置与启动脚本
+├─ docs/                       项目文档
+├─ scripts/                    本地与 Docker 启动脚本
+├─ docker-compose.yml          生产编排
+├─ .env.example                环境变量模板
+└─ README.md                   本说明
 ```
 
-不要执行 `docker compose down -v`，除非明确要删除全部账号、审核记录和投稿文件；该操作不可通过项目包恢复。
-模型密钥仅保存在 `.env` 或密钥管理服务中。模型回答中的文献引用只来自当前检索到的数据库证据；无检索证据时会明确作为导览交流而非文献事实。
+`data/jiaxiu_app.sqlite`（账号、会话、审计）和 `data/submissions/` 由应用在运行期自动创建，已被 `.gitignore` 排除。
 
-## 本地源码开发
-## 功能概览
-
-上线只需 Docker。需要修改源码时，建议使用 Python 3.12、uv 0.11.26、Node.js 24 和仓库锁定的 pnpm 版本：
-- 四季场景：春雨、夏日、秋叶、冬雪，以及 2D/3D 浏览切换。
-- 题咏资料：全文检索、作品详情、研究状态、来源与影像对读。
-- 浮玉客：题咏导览、季节推荐与开放的诗意交流。
-- 公众协作：提交诗词资料或影像，审核后再公开。
-- 管理后台：审核投稿、管理用户与审计记录。
+## 开发与测试命令
 
 ```powershell
-$env:UV_PROJECT_ENVIRONMENT = Join-Path (Get-Location) ".venv"
+# 依赖安装
 uv sync --project apps/api --frozen
 corepack pnpm install --frozen-lockfile
-corepack pnpm build
+
+# 前端
+pnpm test           # 单元测试
+pnpm run test:e2e   # E2E 测试
+pnpm run lint:web   # Lint
+pnpm run build      # 生产构建
+
+# 后端
+uv run --project apps/api --extra dev -- python -m pytest apps/api/tests -q
 ```
+
+后端测试依赖 `dev` 可选依赖组，必须使用 `--extra dev`，否则会报 `No module named pytest`。
+
 ## 架构与数据
 
-生产前端构建时使用同源 API 前缀 `/api/v1`，无需在浏览器中暴露 API 容器地址。
 | 层级 | 技术与职责 |
 | --- | --- |
 | 前端 | React 19、TypeScript、Vite、Three.js、SparkJS |
 | API | FastAPI、Pydantic、SQLite |
 | Web 网关 | Nginx；提供 SPA 回退并代理同源 `/api/v1` |
-| 容器数据 | 研究数据库与影像只读；账号、投稿与审计信息保存在 Docker 持久卷 |
+| 安全 | Argon2 密码散列、服务端会话、CSRF 校验、角色权限、首次登录强制改密 |
 
-### 本地一键运行
-Docker 仅向外暴露 Web 端口；Nginx 将 `/api/v1` 请求转发给 API。API 镜像使用锁定的 `apps/api/uv.lock` 安装依赖，运行时只包含 API 源码、研究数据库和入口脚本。
+浏览器访问 Nginx，Nginx 再转发 API。生产拓扑中 API 容器不向宿主机暴露端口，前端构建时使用同源前缀 `/api/v1`，无需在浏览器中暴露 API 地址。
 
-在项目根目录准备好 `.env` 后，Linux/macOS 或带 POSIX shell 的环境可执行：
-## 首次登录与投稿
+Docker 数据卷：
 
-```sh
-sh scripts/run-local.sh
-```
-Docker 首次启动会按 `.env` 创建以下账号：
+- `jiaxiu-app-data`：账号、会话、审核状态和审计数据库。
+- `jiaxiu-submissions`：投稿者上传的私有扫描文件。
 
-脚本会先同步 Python 与前端依赖，再启动 API（默认 `http://127.0.0.1:8000`）和 Vite 前端（默认 `http://127.0.0.1:5173`）。API 会从项目根目录读取 `.env`，即使 uvicorn 的工作目录是 `apps/api` 也无需复制配置文件。可用 `JIAXIU_API_PORT` 和 `JIAXIU_WEB_DEV_PORT` 覆盖两个本地端口；按 `Ctrl+C` 会同时停止两个子进程。
-| 账号 | 角色 |
-| --- | --- |
-| `admin` | 审核投稿、管理用户与查看审计记录 |
-| `contributor` | 提交题咏资料与影像，查看自己的投稿 |
-
-### Docker 一键运行
-访问 `/login` 登录。首次登录后必须修改初始密码。投稿内容先进入待审核状态，只有管理员发布后才会进入公开展示。
-
-```sh
-sh scripts/run-docker.sh
-```
-## 常用开发命令
-
-该脚本先执行 `docker compose config` 校验配置，再构建并以前台方式启动服务；如需后台运行，可附加 Compose 参数：
-```powershell
-# 前端测试、Lint、生产构建
-pnpm test
-pnpm run lint:web
-pnpm run build
-
-```sh
-sh scripts/run-docker.sh -d
-# 后端测试
-uv run --project apps/api --extra dev -- python -m pytest apps/api/tests -q
-```
-
-Docker 仍是生产运行方式。API 镜像使用锁定的 `apps/api/uv.lock` 安装依赖，只复制 API 源码、研究数据库和入口脚本；`.env` 中的敏感项由 Docker Compose 注入，不写入镜像。
+API 镜像使用锁定的 `apps/api/uv.lock` 安装依赖，只复制 API 源码、研究数据库和入口脚本；`.env` 中的敏感项由 Docker Compose 注入，不写入镜像。
 
 ## 常见问题
 
-- **Compose 提示必须设置密码：** `.env` 不存在、变量为空，或仍使用 `CHANGE_ME_*` 占位值。复制模板并设置真实强密码。
-- **登录后立即跳回登录页：** 纯 HTTP 环境误用了安全 Cookie。仅本机测试可设置 `JIAXIU_SESSION_COOKIE_SECURE=false`；正式环境应启用 HTTPS。
-- **浏览器出现 CORS 错误：** 检查 `JIAXIU_CORS_ALLOWED_ORIGINS` 是否为合法 JSON 数组，并与访问协议、域名和端口完全一致。
-- **8080 端口被占用：** 修改 `.env` 中的 `JIAXIU_WEB_PORT` 后重新启动。
-- **API 一直不健康：** 执行 `docker compose logs api --tail=200`，重点检查初始密码、数据卷权限和数据库文件。
-- **刷新子页面返回 404：** 应通过包内 Nginx 访问，不要把 `apps/web` 目录直接交给缺少 SPA 回退的静态服务器。
-- **修改初始密码变量后旧密码未变化：** 这是预期行为。环境变量只负责首次创建账号，不覆盖现有密码；请登录修改或由管理员重置。
-- **页面未显示高清扫描：** 确认 `data/facsimiles` 目录已随包解压，且 API 容器的只读挂载已生效；检查 `docker compose logs api` 中的影像路径与文件大小提示。
 | 问题 | 处理方式 |
 | --- | --- |
 | `uv` 或 `corepack` 未找到 | 安装对应工具后重开终端。 |
-| Docker 提示初始密码无效 | 检查 `.env` 是否存在，且两个 `CHANGE_ME_*` 已替换。 |
-| 本地登录后立即返回登录页 | 纯 HTTP 本地验证时设置 `JIAXIU_SESSION_COOKIE_SECURE=false`；生产环境保持 `true`。 |
-| 浏览器出现 CORS 错误 | 确认 `JIAXIU_CORS_ALLOWED_ORIGINS` 为 JSON 数组，且与浏览器实际地址完全一致。 |
-| Docker 端口被占用 | 修改 `.env` 中的 `JIAXIU_WEB_PORT`。 |
-| API 健康检查失败 | 执行 `docker compose logs api --tail=200`，检查密码、数据卷权限与数据库路径。 |
-| 刷新子页面返回 404 | 通过 Docker/Nginx 访问，或使用 Vite 开发服务器，不要用无 SPA 回退的静态服务器。 |
+| Docker 提示必须设置初始密码 | `.env` 不存在、变量为空，或仍为 `CHANGE_ME_*` 占位值。复制模板并设置真实强密码。 |
+| 登录后立即跳回登录页 | 纯 HTTP 环境误用了安全 Cookie。本机测试设 `JIAXIU_SESSION_COOKIE_SECURE=false`，正式环境启用 HTTPS。 |
+| 页面提示"资料暂不可读取" | 通常是 CORS 被拦截而非后端未启动。确认 `JIAXIU_CORS_ALLOWED_ORIGINS` 为合法 JSON 数组，且与浏览器地址栏的协议、域名、端口完全一致。 |
+| 浏览器控制台出现 CORS 错误 | 同上。修改 `.env` 后必须重启后端才会生效。 |
+| 本地登录提示用户名或密码错误 | 账号可能未创建（见"首次登录与投稿"）。确认 `.env` 已配置且初始密码长度 ≥ 12。 |
+| 修改初始密码变量后旧密码未变化 | 预期行为。环境变量只负责首次创建账号，不覆盖现有密码。 |
+| Docker 端口被占用 | 修改 `.env` 中的 `JIAXIU_WEB_PORT` 后重新启动。 |
+| API 健康检查失败 | 执行 `docker compose logs api --tail=200`，检查初始密码、数据卷权限与数据库路径。 |
+| 刷新子页面返回 404 | 通过 Docker/Nginx 或 Vite 开发服务器访问，不要用缺少 SPA 回退的静态服务器。 |
+| 页面未显示高清扫描 | 确认 `data/facsimiles` 已随包解压，且 API 容器的只读挂载生效。 |
+| Windows 下执行 `.ps1` 报语法错误 | 脚本为 UTF-8 with BOM；若编辑器去掉了 BOM，Windows PowerShell 5.1 会按 GBK 解码导致解析失败。 |
 
-## 上线安全提示
 ## 生产注意事项
 
-- 正式开放前配置 HTTPS、防火墙、定期备份和主机安全更新。
-- `.env` 权限仅授予部署管理员，不要将模型密钥或账号密码写入镜像和版本库。
+- 生产部署应使用 HTTPS、防火墙、主机安全更新和定期备份。
+- `.env` 权限仅授予部署管理员；不要把模型密钥或账号密码写入镜像、前端代码或版本库。
 - 定期检查管理员审计记录、失败登录和异常上传；公开部署应增加外围限流和恶意文件扫描。
-- 先在预发布环境恢复一次备份，确认备份文件实际可用。
-- 生产部署应使用 HTTPS、防火墙、主机更新和定期备份。
-- `.env` 只授予部署管理员访问，不要把密码或模型密钥写入镜像、前端代码或版本库。
-- 备份 Docker 卷前暂停写入，并在预发布环境完成至少一次恢复演练。
+- 备份 Docker 卷前暂停写入，并在预发布环境完成至少一次恢复演练，确认备份文件实际可用。
+- 建议生产域名已配置 HTTPS；TLS 可由宿主机反向代理、负载均衡器或云网关终止。
