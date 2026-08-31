@@ -3,13 +3,32 @@
 .guide-panel--closed { display: block; width: auto; filter: none; }
 .guide-panel__portrait { position: relative; z-index: 2; align-self: end; margin-right: -1.3rem; padding: .7rem .5rem .3rem; background: radial-gradient(ellipse at 50% 90%, rgba(181,143,84,.28), transparent 59%); }
 .guide-panel__portrait::after { content: ""; position: absolute; right: -.15rem; bottom: .3rem; left: .2rem; height: 1px; background: linear-gradient(90deg, transparent, rgba(250,247,239,.68), transparent); }
+/* One drawing, two tints. Pale outlines over palette washes where the figure stands on the dark
+   scene or the folded rail; ink outlines and fuller washes where it stands on the light page. */
 .guide-portrait { display: block; width: 100%; overflow: visible; }
-.guide-portrait__wash { fill: rgba(17, 38, 31, .82); stroke: none; }
-.guide-portrait__robe, .guide-portrait__head, .guide-portrait__hat, .guide-portrait__face, .guide-portrait__fan { fill: rgba(242,238,228,.06); stroke: #e3dcc8; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
-.guide-portrait__hair { fill: #172923; stroke: #dfd7c3; stroke-width: 1.2; }
-.guide-portrait__face { fill: none; stroke-width: 1.2; }
-.guide-portrait__seal { fill: rgba(165,71,61,.82); stroke: #e7cdbf; stroke-width: 1; }
+.guide-portrait__robe, .guide-portrait__head, .guide-portrait__hat, .guide-portrait__fan { stroke-linecap: round; stroke-linejoin: round; }
+.guide-portrait__face { fill: none; }
+
+.guide-portrait__wash { fill: color-mix(in srgb, var(--water) 34%, rgba(17,38,31,.86)); stroke: none; }
+.guide-portrait__robe { fill: color-mix(in srgb, var(--water) 32%, transparent); stroke: #e6dfcb; stroke-width: 1.8; }
+.guide-portrait__head { fill: color-mix(in srgb, var(--paper-light) 18%, transparent); stroke: #e6dfcb; stroke-width: 1.8; }
+.guide-portrait__hat { fill: color-mix(in srgb, var(--bronze) 40%, transparent); stroke: #e6dfcb; stroke-width: 1.8; }
+.guide-portrait__fan { fill: color-mix(in srgb, var(--bronze) 30%, transparent); stroke: #e6dfcb; stroke-width: 1.8; }
+.guide-portrait__face { stroke: #e6dfcb; stroke-width: 1.3; }
+.guide-portrait__hair { fill: #172923; stroke: #e2dbcb; stroke-width: 1.3; }
+.guide-portrait__seal { fill: rgba(165,71,61,.95); stroke: #ecd6c9; stroke-width: 1; }
 .guide-portrait__seal-mark { fill: none; stroke: var(--paper-light); stroke-width: 1.1; }
+
+/* Light ground: the same figure inked in, coloured from the archive palette. */
+.guide-portrait--ink .guide-portrait__wash { fill: color-mix(in srgb, var(--water) 22%, transparent); }
+.guide-portrait--ink .guide-portrait__robe { fill: color-mix(in srgb, var(--water) 42%, var(--paper-light)); stroke: var(--ink); stroke-width: 1.9; }
+.guide-portrait--ink .guide-portrait__head { fill: var(--paper-light); stroke: var(--ink); stroke-width: 1.9; }
+.guide-portrait--ink .guide-portrait__hat { fill: color-mix(in srgb, var(--bronze) 58%, var(--paper-light)); stroke: var(--ink); stroke-width: 1.9; }
+.guide-portrait--ink .guide-portrait__fan { fill: color-mix(in srgb, var(--bronze) 34%, var(--paper-light)); stroke: var(--ink); stroke-width: 1.9; }
+.guide-portrait--ink .guide-portrait__face { stroke: var(--ink); stroke-width: 1.4; }
+.guide-portrait--ink .guide-portrait__hair { fill: var(--ink); stroke: var(--ink); stroke-width: 1.3; }
+.guide-portrait--ink .guide-portrait__seal { fill: var(--vermilion); stroke: var(--paper-light); }
+.guide-portrait--ink .guide-portrait__seal-mark { stroke: var(--paper-light); }
 .guide-panel__sheet { position: relative; max-height: min(70vh, 46rem); overflow: auto; padding: 1.2rem 1.3rem 1.35rem 1.6rem; background: linear-gradient(105deg, rgba(250,247,239,.97), rgba(236,229,212,.94)); box-shadow: inset .25rem 0 rgba(181,143,84,.18), inset .33rem 0 0 rgba(165,71,61,.72); clip-path: polygon(0 0, 97% 0, 100% 1.1rem, 100% calc(100% - 1rem), 97% 100%, 0 100%); scrollbar-width: thin; scrollbar-color: var(--bronze) transparent; }
 .guide-panel__sheet::before { content: ""; position: absolute; inset: 0; z-index: -1; opacity: .2; background: repeating-linear-gradient(91deg, transparent 0 11px, rgba(23,41,35,.045) 12px 13px); }
 .guide-panel__header { display: flex; justify-content: space-between; gap: 1rem; align-items: start; padding-bottom: .6rem; border-bottom: 1px solid var(--rule); }
@@ -69,8 +88,8 @@
 .guide-action--apply { width: 100%; margin-top: .8rem; border: 1px solid var(--vermilion); background: transparent; color: var(--vermilion); font: .79rem var(--sans); letter-spacing: .14em; }
 .guide-hit-target { min-height: 44px; }
 .guide-entry { display: flex; gap: .75rem; align-items: center; padding: .4rem .9rem .4rem .45rem; border: 1px solid rgba(250,247,239,.6); background: rgba(16,29,25,.74); color: var(--paper-light); backdrop-filter: blur(8px); }
-.guide-entry > span:first-child { display: grid; place-items: center; width: 2.6rem; height: 2.6rem; border: 1px solid var(--vermilion); color: #f0cfc3; font-size: 1.3rem; }
-.guide-entry > span:last-child { display: grid; text-align: left; font-size: .92rem; }
+.guide-entry__figure { flex: none; width: 2.1rem; height: auto; }
+.guide-entry__label { display: grid; text-align: left; font-size: .92rem; }
 .guide-entry b { font-weight: 400; letter-spacing: .08em; }
 .guide-entry small { margin-top: .2rem; color: var(--bronze); font: .62rem var(--sans); letter-spacing: .1em; }
 @keyframes guide-search { from { width: 0; } to { width: 1.2rem; } }
@@ -118,9 +137,15 @@
 
 /* Away from the scene, the guide waits as a folded rail on the margin of every page. */
 .guide-dock { position: fixed; z-index: 40; right: 0; bottom: clamp(1rem, 7vh, 3.5rem); }
-.guide-dock__rail { display: grid; gap: .6rem; place-items: center; padding: 1.05rem .6rem; border: 1px solid rgba(250,247,239,.5); border-right: 0; background: rgba(16,29,25,.88); color: var(--paper-light); font: .87rem var(--sans); letter-spacing: .22em; writing-mode: vertical-rl; backdrop-filter: blur(8px); }
-.guide-dock__rail > span:first-child { display: grid; place-items: center; width: 1.8rem; height: 1.8rem; border: 1px solid var(--vermilion); color: #f0cfc3; font-size: .95rem; writing-mode: horizontal-tb; letter-spacing: 0; }
-.guide-dock__panel { display: flex; flex-direction: column; width: min(27rem, calc(100vw - 1.4rem)); max-height: min(80vh, 44rem); margin-right: .6rem; background: linear-gradient(105deg, rgba(250,247,239,.98), rgba(236,229,212,.96)); box-shadow: inset .25rem 0 rgba(181,143,84,.18), inset .33rem 0 0 rgba(165,71,61,.72), 0 1.1rem 2.4rem rgba(4,15,12,.3); }
+.guide-dock__rail { display: grid; gap: .7rem; justify-items: center; align-content: center; padding: 1rem .65rem; border: 1px solid rgba(250,247,239,.5); border-right: 0; background: rgba(16,29,25,.88); color: var(--paper-light); backdrop-filter: blur(8px); }
+.guide-dock__rail-figure { width: 2.6rem; height: auto; }
+.guide-dock__rail-label { font: .87rem var(--sans); letter-spacing: .22em; writing-mode: vertical-rl; }
+/* Open, the dock mirrors the scene home: the figure stands to the left of the folio. */
+.guide-dock__panel { display: grid; grid-template-columns: 5.4rem minmax(0, 1fr); align-items: end; width: min(32rem, calc(100vw - 1.4rem)); margin-right: .6rem; filter: drop-shadow(0 1.1rem 2.4rem rgba(4,15,12,.3)); }
+.guide-dock__figure { position: relative; z-index: 2; align-self: end; margin-right: -.9rem; padding: .6rem .4rem .25rem; background: radial-gradient(ellipse at 50% 90%, rgba(181,143,84,.28), transparent 59%); }
+.guide-dock__figure .guide-portrait { filter: drop-shadow(0 .18rem .34rem rgba(23,41,35,.26)); }
+.guide-dock__figure::after { content: ""; position: absolute; right: -.15rem; bottom: .25rem; left: .2rem; height: 1px; background: linear-gradient(90deg, transparent, rgba(250,247,239,.68), transparent); }
+.guide-dock__sheet { position: relative; display: flex; flex-direction: column; min-width: 0; max-height: min(80vh, 44rem); background: linear-gradient(105deg, rgba(250,247,239,.98), rgba(236,229,212,.96)); box-shadow: inset .25rem 0 rgba(181,143,84,.18), inset .33rem 0 0 rgba(165,71,61,.72); clip-path: polygon(0 0, 97% 0, 100% 1.1rem, 100% calc(100% - 1rem), 97% 100%, 0 100%); }
 .guide-dock__header { display: flex; justify-content: space-between; gap: .9rem; align-items: start; padding: .9rem 1.15rem .6rem 1.35rem; border-bottom: 1px solid var(--rule); }
 .guide-dock__header p { margin: 0 0 .2rem; color: var(--water); font: .67rem/1.45 var(--sans); letter-spacing: .18em; }
 .guide-dock__header h2 { margin: 0; font: 1.85rem/1 var(--serif); font-weight: 400; letter-spacing: .08em; }
@@ -129,10 +154,13 @@
 
 @media (max-width: 760px) {
   .guide-dock { bottom: .7rem; }
-  .guide-dock__panel { width: calc(100vw - 1.1rem); max-height: 78svh; }
+  .guide-dock__panel { grid-template-columns: 3.6rem minmax(0, 1fr); width: calc(100vw - 1.1rem); }
+  .guide-dock__figure { margin-right: -.5rem; padding: .3rem .15rem .1rem; }
+  .guide-dock__sheet { max-height: 78svh; }
   .guide-dock__body { padding: .8rem .9rem .95rem 1.1rem; }
   .guide-turn--user { max-width: 93%; }
   .guide-dock__header h2 { font-size: 1.6rem; }
+  .guide-dock__rail-figure { width: 2.1rem; }
 }
 
 @media (prefers-reduced-motion: reduce) {

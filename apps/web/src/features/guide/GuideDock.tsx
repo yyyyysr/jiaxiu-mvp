@@ -2,10 +2,11 @@ import { useEffect, useRef, useState } from "react"
 import { useLocation } from "react-router-dom"
 
 import { GuideConsole } from "./GuideConsole"
+import { GuidePortrait } from "./GuidePortrait"
 
 /**
- * The guide follows the reader through the archive as a folded rail. The scene home has its own
- * standing portrait, so the dock stays out of the way there.
+ * The guide follows the reader through the archive as a folded rail, carrying the same ink-wash
+ * figure it has on the scene home — folded into the rail, or standing beside the conversation.
  */
 export function GuideDock() {
   const { pathname } = useLocation()
@@ -43,8 +44,8 @@ export function GuideDock() {
           aria-label="唤出浮玉客"
           onClick={() => setOpen(true)}
         >
-          <span aria-hidden="true">客</span>
-          <span>浮玉客</span>
+          <GuidePortrait className="guide-dock__rail-figure" decorative />
+          <span className="guide-dock__rail-label">浮玉客</span>
         </button>
       </aside>
     )
@@ -53,21 +54,24 @@ export function GuideDock() {
   return (
     <aside className="guide-dock guide-dock--open" aria-label="浮玉客随行导览">
       <div className="guide-dock__panel">
-        <header className="guide-dock__header">
-          <div>
-            <p>AI 辅助导览 · 随页可问</p>
-            <h2>浮玉客</h2>
+        <div className="guide-dock__figure"><GuidePortrait ground="light" decorative /></div>
+        <div className="guide-dock__sheet">
+          <header className="guide-dock__header">
+            <div>
+              <p>AI 辅助导览 · 随页可问</p>
+              <h2>浮玉客</h2>
+            </div>
+            <button
+              className="guide-hit-target"
+              type="button"
+              onClick={() => { restoreFocusRef.current = true; setOpen(false) }}
+            >
+              隐藏导览
+            </button>
+          </header>
+          <div className="guide-dock__body">
+            <GuideConsole />
           </div>
-          <button
-            className="guide-hit-target"
-            type="button"
-            onClick={() => { restoreFocusRef.current = true; setOpen(false) }}
-          >
-            隐藏导览
-          </button>
-        </header>
-        <div className="guide-dock__body">
-          <GuideConsole />
         </div>
       </div>
     </aside>
